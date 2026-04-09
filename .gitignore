@@ -1,0 +1,58 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# Next.js
+.next/
+out/
+.vercel
+
+# Build / TS (next-env.d.ts is generated but usually committed for editor/CI)
+*.tsbuildinfo
+
+# Env (secrets - keep .env.example in repo)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Cache (GeoIP JSON fallback when not using Postgres)
+.cache/
+
+# Logs & debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# OS / editor
+.DS_Store
+.idea/
+*.swp
+*.swo
+
+# Python (scripts)
+__pycache__/
+*.py[cod]
+.Python
+*.so
+.venv/
+venv/
+
+# Test / coverage
+coverage/
+.nyc_output/
+
+# Turbo (if used later)
+.turbo
+
+# hosts/ - w repozytorium tylko rbbc_nodes_by_id_all.json; pozostałe pliki w hosts/ ignorowane
+hosts/*
+!hosts/rbbc_nodes_by_id_all.json
+
+# Lokalna dokumentacja robocza (procedury, notatki) - poza gitem
+docs/
