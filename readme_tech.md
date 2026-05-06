@@ -64,7 +64,7 @@ With Postgres, successful/failed lookups are **upserted** into the DB; the JSON 
 ### Pinned successful lookups (default)
 
 - If **`GEO_REFRESH_SUCCESS_MS` is unset or `0`** (default): after a **successful** ip-api response for a host, the app **does not call ip-api again** for that host. Only **new** hostnames (or hosts still missing Geo / in `fail` cooldown) are resolved in the background. Stored expiry is long (~10 years) for bookkeeping.
-- If you want periodic refresh of good coordinates, set e.g. **`GEO_REFRESH_SUCCESS_MS=86400000`** (24 hours in milliseconds).
+- If you want periodic refresh of good coordinates, set e.g. **`GEO_REFRESH_SUCCESS_MS=86400000`** (24 hours in milliseconds). **Restart** the Node process after changing env (`ipApiGeo` reads the value at startup). If you already had pinned rows in **Postgres** (`node_map_host_geo`) with a far-future `expires_at`, shorten them once so backfill runs soon, e.g. `UPDATE node_map_host_geo SET expires_at = NOW() - INTERVAL '1 second' WHERE is_fail = false;` (expect a burst of ip-api calls spread over **`IP_API_MIN_INTERVAL_MS`**).
 
 ### Background worker
 
