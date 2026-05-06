@@ -156,10 +156,10 @@ function nowCached(key: string, t: number): IpApiGeoResult | undefined {
   const hit = cache.get(key);
   if (!hit) return undefined;
   if ("lat" in hit && Number.isFinite(hit.lat) && Number.isFinite(hit.lon)) {
-    if (SUCCESS_REFRESH_MS === 0 || hit.expires > t) {
-      return { lat: hit.lat, lon: hit.lon, countryCode: hit.countryCode };
-    }
-    return undefined;
+    // Stale-while-revalidate: keep showing last ip-api coords while expires is past and
+    // needsNetworkFetch queues a refresh. Returning undefined here made /api/nodes omit
+    // geo_* so the client fell back to hostname heuristics (often wrong / mid-ocean).
+    return { lat: hit.lat, lon: hit.lon, countryCode: hit.countryCode };
   }
   if ("fail" in hit && hit.fail) return undefined;
   if (hit.expires <= t) return undefined;
