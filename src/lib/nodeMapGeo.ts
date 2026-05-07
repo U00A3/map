@@ -25,6 +25,15 @@ export type MapNodePoint = {
   source?: "dashboard" | "registry";
   /** Node is a registered governor (diamond marker on map) */
   isGovernor?: boolean;
+  /** ip-api resolved IP (when Geo from API) */
+  geoQuery?: string | null;
+  geoIsp?: string | null;
+  geoOrg?: string | null;
+  /** ip-api `as` line */
+  geoAs?: string | null;
+  geoAsname?: string | null;
+  /** True when coordinates came from ip-api cache (show ISP rows even if older cache has no isp yet) */
+  geoFromApi?: boolean;
 };
 
 export type ApiNodeRow = {
@@ -36,6 +45,11 @@ export type ApiNodeRow = {
   geo_lat?: number | null;
   geo_lon?: number | null;
   geo_country?: string | null;
+  geo_query?: string | null;
+  geo_isp?: string | null;
+  geo_org?: string | null;
+  geo_as?: string | null;
+  geo_asname?: string | null;
 };
 
 function hash32(str: string): number {
@@ -182,6 +196,11 @@ export type RegistryGeoEntry = {
   lat: number;
   lon: number;
   countryCode?: string | null;
+  query?: string | null;
+  isp?: string | null;
+  org?: string | null;
+  asnLine?: string | null;
+  asname?: string | null;
 };
 
 function rowStatus(is_online: boolean | null): NodeMapStatus {
@@ -217,6 +236,23 @@ export function apiNodesToMapPoints(
       country = r.country;
     }
 
+    const usedIpApiGeo =
+      typeof n.geo_lat === "number" &&
+      typeof n.geo_lon === "number" &&
+      Number.isFinite(n.geo_lat) &&
+      Number.isFinite(n.geo_lon);
+
+    const geoExtras = usedIpApiGeo
+      ? {
+          geoQuery: n.geo_query ?? null,
+          geoIsp: n.geo_isp ?? null,
+          geoOrg: n.geo_org ?? null,
+          geoAs: n.geo_as ?? null,
+          geoAsname: n.geo_asname ?? null,
+          geoFromApi: true as const,
+        }
+      : {};
+
     return {
       id: String(n.id),
       host: n.host,
@@ -227,6 +263,7 @@ export function apiNodesToMapPoints(
       latencyMs: n.latency_ms ?? null,
       source: "dashboard",
       isGovernor: governorHosts ? governorHosts.has(n.host.trim().toLowerCase()) : false,
+      ...geoExtras,
     };
   });
 }
@@ -263,6 +300,19 @@ export function registryHostsToMapPoints(
       lon = geo.lon;
       country = geo.country;
     }
+    const usedRegGeo = g && Number.isFinite(g.lat) && Number.isFinite(g.lon);
+
+    const geoExtras = usedRegGeo
+      ? {
+          geoQuery: g!.query ?? null,
+          geoIsp: g!.isp ?? null,
+          geoOrg: g!.org ?? null,
+          geoAs: g!.asnLine ?? null,
+          geoAsname: g!.asname ?? null,
+          geoFromApi: true as const,
+        }
+      : {};
+
     out.push({
       id: `reg:${h}`,
       host: h,
@@ -273,6 +323,7 @@ export function registryHostsToMapPoints(
       latencyMs: null,
       source: "registry",
       isGovernor: governorHosts ? governorHosts.has(key) : false,
+      ...geoExtras,
     });
   }
   return out;

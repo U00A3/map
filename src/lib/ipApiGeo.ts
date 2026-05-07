@@ -20,7 +20,14 @@ import {
   type HostGeoRow,
 } from "@/lib/hostGeoPg";
 
-const IP_API_FIELDS = "status,message,lat,lon,countryCode,query";
+/** Geo + ISP/ASN (same 45 req/min limit); @see https://ip-api.com/docs/api:json */
+const IP_API_FIELDS = "status,message,lat,lon,countryCode,query,isp,org,as,asname";
+
+function strOrNull(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const t = v.trim();
+  return t.length > 0 ? t : null;
+}
 
 function envInt(name: string, def: number): number {
   const v = process.env[name]?.trim();
@@ -53,6 +60,11 @@ type Cached =
       lon: number;
       countryCode: string | null;
       expires: number;
+      query?: string | null;
+      isp?: string | null;
+      org?: string | null;
+      asnLine?: string | null;
+      asname?: string | null;
     }
   | {
       fail: true;
@@ -65,6 +77,13 @@ export type IpApiGeoResult = {
   lat: number;
   lon: number;
   countryCode: string | null;
+  /** Resolved IP (ip-api `query`) */
+  query?: string | null;
+  isp?: string | null;
+  org?: string | null;
+  /** ip-api field `as` (e.g. AS24940 Hetzner Online GmbH) */
+  asnLine?: string | null;
+  asname?: string | null;
 };
 
 function usePostgresStore(): boolean {
@@ -127,6 +146,11 @@ function applyDbRowsToMemory(rows: Map<string, HostGeoRow>): void {
         lon: r.lon,
         countryCode: r.country_code,
         expires: exp,
+        query: r.resolved_ip ?? undefined,
+        isp: r.isp ?? undefined,
+        org: r.org ?? undefined,
+        asnLine: r.asn_line ?? undefined,
+        asname: r.asname ?? undefined,
       });
     }
   }
@@ -159,7 +183,16 @@ function nowCached(key: string, t: number): IpApiGeoResult | undefined {
     // Stale-while-revalidate: keep showing last ip-api coords while expires is past and
     // needsNetworkFetch queues a refresh. Returning undefined here made /api/nodes omit
     // geo_* so the client fell back to hostname heuristics (often wrong / mid-ocean).
-    return { lat: hit.lat, lon: hit.lon, countryCode: hit.countryCode };
+    return {
+      lat: hit.lat,
+      lon: hit.lon,
+      countryCode: hit.countryCode,
+      query: hit.query ?? null,
+      isp: hit.isp ?? null,
+      org: hit.org ?? null,
+      asnLine: hit.asnLine ?? null,
+      asname: hit.asname ?? null,
+    };
   }
   if ("fail" in hit && hit.fail) return undefined;
   if (hit.expires <= t) return undefined;
@@ -197,6 +230,11 @@ async function fetchGeoFromApi(host: string): Promise<IpApiGeoResult | null> {
       lat?: number;
       lon?: number;
       countryCode?: string;
+      query?: string;
+      isp?: string;
+      org?: string;
+      as?: string;
+      asname?: string;
     };
     if (j.status !== "success" || typeof j.lat !== "number" || typeof j.lon !== "number") {
       cache.set(key, { fail: true, expires: now + FAIL_TTL_MS });
@@ -211,20 +249,46 @@ async function fetchGeoFromApi(host: string): Promise<IpApiGeoResult | null> {
       }
       return null;
     }
+    const resolvedIp = strOrNull(j.query);
+    const isp = strOrNull(j.isp);
+    const org = strOrNull(j.org);
+    const asnLine = strOrNull(j.as);
+    const asname = strOrNull(j.asname);
     const out: IpApiGeoResult = {
       lat: j.lat,
       lon: j.lon,
       countryCode: j.countryCode ?? null,
+      query: resolvedIp,
+      isp,
+      org,
+      asnLine,
+      asname,
     };
     cache.set(key, {
       lat: out.lat,
       lon: out.lon,
       countryCode: out.countryCode,
       expires: now + successTtlMs,
+      query: resolvedIp ?? undefined,
+      isp: isp ?? undefined,
+      org: org ?? undefined,
+      asnLine: asnLine ?? undefined,
+      asname: asname ?? undefined,
     });
     if (usePostgresStore()) {
       try {
-        await upsertHostGeoOk(key, out.lat, out.lon, out.countryCode, expiresOk);
+        await upsertHostGeoOk(
+          key,
+          out.lat,
+          out.lon,
+          out.countryCode,
+          resolvedIp,
+          isp,
+          org,
+          asnLine,
+          asname,
+          expiresOk,
+        );
       } catch (e) {
         console.error("[ipApiGeo] postgres upsert ok:", e);
       }

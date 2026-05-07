@@ -22,6 +22,11 @@ async function attachGeoFields<T extends NodeLike>(nodes: T[]): Promise<T[]> {
       geo_lat: g.lat,
       geo_lon: g.lon,
       geo_country: g.countryCode,
+      geo_query: g.query ?? null,
+      geo_isp: g.isp ?? null,
+      geo_org: g.org ?? null,
+      geo_as: g.asnLine ?? null,
+      geo_asname: g.asname ?? null,
     };
   });
 }

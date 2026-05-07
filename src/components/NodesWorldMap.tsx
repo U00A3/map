@@ -222,18 +222,38 @@ const NodesWorldMap = forwardRef<NodesWorldMapHandle, Props>(function NodesWorld
         ? `<div class="nodes-map-popup-row"><span>Role</span><span class="nodes-map-popup-governor">Governor</span></div>`
         : "";
 
+      const hasNetGeo = Boolean(
+        p.geoFromApi ||
+          p.geoQuery?.trim() ||
+          p.geoIsp?.trim() ||
+          p.geoOrg?.trim() ||
+          p.geoAs?.trim() ||
+          p.geoAsname?.trim(),
+      );
+      const ipRow = p.geoQuery?.trim()
+        ? `<div class="nodes-map-popup-row"><span>IP</span><span>${escapeHtml(p.geoQuery.trim())}</span></div>`
+        : "";
+      const providerText =
+        p.geoIsp?.trim() || p.geoOrg?.trim() || p.geoAsname?.trim() || "—";
+      const asnText = p.geoAs?.trim() || "—";
+      const netGeoRows = hasNetGeo
+        ? `${ipRow}<div class="nodes-map-popup-row"><span>Provider</span><span>${escapeHtml(providerText)}</span></div>
+          <div class="nodes-map-popup-row"><span>ASN</span><span>${escapeHtml(asnText)}</span></div>`
+        : "";
+
       marker.bindPopup(
         `<div class="nodes-map-popup nodes-map-popup--rich">
           <div class="nodes-map-popup-id">${escapeHtml(p.id)}</div>
           <div class="nodes-map-popup-host">${escapeHtml(p.host)}</div>
           ${roleRow}${sourceRow}
           <div class="nodes-map-popup-row"><span>Country</span><span>${escapeHtml(country)}</span></div>
+          ${netGeoRows}
           <div class="nodes-map-popup-row"><span>Latency</span><span>${escapeHtml(lat)}</span></div>
           <div class="nodes-map-popup-row"><span>Status</span><span class="nodes-map-popup-status nodes-map-popup-status--${p.status}">${statusLabel}</span></div>
           <div class="nodes-map-popup-row"><span>Lat / Lon</span><span>${escapeHtml(latlon)}</span></div>
         </div>`,
         {
-          maxWidth: 260,
+          maxWidth: 300,
           autoClose: false,
           closeOnClick: false,
         },
