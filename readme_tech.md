@@ -49,6 +49,7 @@ The client merges dashboard and registry hosts into one list; duplicates (same h
 
 - The free HTTP API is limited to **~45 requests per minute per server IP**. Going over returns **HTTP 429**; repeated abuse can **ban the IP for one hour**. Response headers **`X-Rl`** / **`X-Ttl`** describe remaining quota (see [ip-api docs](https://ip-api.com/docs/api:json)).
 - **ip-api is still used** to *obtain* coordinates for hostnames (and **ISP/ASN** fields `isp`, `org`, `as`, `asname`, `query` in the same request). Results are stored in a **cache** (Postgres and/or JSON file). Map popups show **IP**, **Provider**, **ASN** when data comes from ip-api.
+- **Provider icons** (Regions → Providers list and marker popups): when the ISP/org string matches a known brand, the UI loads the matching **[Simple Icons](https://simpleicons.org/)** SVG via jsDelivr (`src/lib/providerBrandIcons.ts`). There is no separate logo API key; unmatched names fall back to an initial / globe. Add regex→slug entries there for new providers.
 - **`fail` cache entries** (API error or network error) use a short cooldown (minutes), then the worker **retries**. Successful coordinates are **not** repeatedly refetched by default (see **pinned success** below).
 - If there is no valid cached Geo for a host, the map falls back to **`resolveHostGeo()`** in `src/lib/nodeMapGeo.ts` (hostname rules + jitter) - points may look “off” compared to real IP location.
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import ProviderBrandMark from "@/components/ProviderBrandMark";
 
 type RegionItem = { code: string; count: number };
 
@@ -187,13 +188,13 @@ export default function RegionsDropdown({
                     className="flex items-center gap-2 rounded-lg px-2.5 py-2 transition-colors hover:bg-[var(--bg-card-hover)]"
                   >
                     <span
-                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[var(--border-subtle)] text-[11px] font-bold leading-none text-[var(--text-primary)]"
+                      className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[var(--border-subtle)] text-[11px] font-bold leading-none text-[var(--text-primary)]"
                       aria-hidden
                     >
                       {mode === "regions" ? (
                         <span className="text-sm leading-none">{countryFlag(r.code)}</span>
                       ) : (
-                        providerGlyph(r.code)
+                        <ProviderBrandMark label={r.code} fallback={providerGlyph} size={22} />
                       )}
                     </span>
                     {mode === "regions" ? (

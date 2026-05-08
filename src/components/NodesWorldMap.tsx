@@ -13,6 +13,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import type { MapNodePoint, NodeMapStatus } from "@/lib/nodeMapGeo";
+import { providerBrandSlug, simpleIconCdnUrl } from "@/lib/providerBrandIcons";
 
 export type NodesWorldMapHandle = {
   flyTo: (lat: number, lon: number, zoom?: number) => void;
@@ -236,8 +237,14 @@ const NodesWorldMap = forwardRef<NodesWorldMapHandle, Props>(function NodesWorld
       const providerText =
         p.geoIsp?.trim() || p.geoOrg?.trim() || p.geoAsname?.trim() || "—";
       const asnText = p.geoAs?.trim() || "—";
+      const brandSlug =
+        providerText !== "—" ? providerBrandSlug(providerText) : null;
+      const brandIconHtml =
+        brandSlug != null
+          ? `<img src="${simpleIconCdnUrl(brandSlug)}" alt="" width="14" height="14" class="nodes-map-popup-brand-icon" loading="lazy" decoding="async" onerror="this.style.display='none'" />`
+          : "";
       const netGeoRows = hasNetGeo
-        ? `${ipRow}<div class="nodes-map-popup-row"><span>Provider</span><span>${escapeHtml(providerText)}</span></div>
+        ? `${ipRow}<div class="nodes-map-popup-row nodes-map-popup-row--provider"><span>Provider</span><span class="nodes-map-popup-provider-val">${brandIconHtml}<span>${escapeHtml(providerText)}</span></span></div>
           <div class="nodes-map-popup-row"><span>ASN</span><span>${escapeHtml(asnText)}</span></div>`
         : "";
 

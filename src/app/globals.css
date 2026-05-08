@@ -372,6 +372,28 @@ body::before {
   font-size: 10px;
 }
 
+.nodes-map-popup-row--provider .nodes-map-popup-provider-val {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-wrap: wrap;
+  max-width: min(220px, 70vw);
+  text-align: right;
+}
+
+.nodes-map-popup-brand-icon {
+  flex-shrink: 0;
+  display: block;
+}
+
+.nodes-map-popup-row--provider .nodes-map-popup-provider-val > span:last-child {
+  color: var(--text-secondary);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  word-break: break-word;
+}
+
 .nodes-map-popup-status--online {
   color: #34d399 !important;
   font-weight: 600;
