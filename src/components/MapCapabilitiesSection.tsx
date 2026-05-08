@@ -3,7 +3,8 @@
 const GENERAL: string[] = [
   "Geolocation via GeoIP (ip-api); if there is no cache entry, hostname heuristics apply.",
   "Marker clusters and smooth zoom when there are many nodes on the map.",
-  "Popups with details when you click a marker: name, status, location, and more.",
+  "Popups with details when you click a marker: name, status, location, provider (ISP), and more.",
+  "Regions control: switch between country breakdown and provider (ISP/org) breakdown.",
 ];
 
 const MARKER_COLORS: string[] = [

@@ -11,6 +11,7 @@ import NodeListSidebar, { type NodeListFilter } from "@/components/NodeListSideb
 import RegionsDropdown from "@/components/RegionsDropdown";
 import {
   apiNodesToMapPoints,
+  providerLabelForPoint,
   registryHostsToMapPoints,
   type ApiNodeRow,
   type MapNodePoint,
@@ -195,6 +196,19 @@ export default function HomePage() {
       .map(([code, count]) => ({ code, count }));
   }, [allCombinedPoints]);
 
+  const providerBreakdown = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const p of allCombinedPoints) {
+      const label = providerLabelForPoint(p);
+      counts.set(label, (counts.get(label) ?? 0) + 1);
+    }
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .map(([code, count]) => ({ code, count }));
+  }, [allCombinedPoints]);
+
+  const providerDistinct = providerBreakdown.length;
+
   const dashHref = MAIN ? `${MAIN}/` : "/";
 
   return (
@@ -231,7 +245,12 @@ export default function HomePage() {
 
             <div className="flex w-full shrink-0 flex-col gap-3 lg:max-w-[min(100%,22rem)] lg:self-stretch lg:items-end lg:justify-end">
               <div className="flex flex-wrap justify-end">
-                <RegionsDropdown value={regions} regions={regionBreakdown} />
+                <RegionsDropdown
+                  regionCount={regions}
+                  providerCount={providerDistinct}
+                  regions={regionBreakdown}
+                  providers={providerBreakdown}
+                />
               </div>
             </div>
           </div>

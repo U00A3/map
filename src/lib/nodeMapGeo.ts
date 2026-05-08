@@ -36,6 +36,12 @@ export type MapNodePoint = {
   geoFromApi?: boolean;
 };
 
+/** ISP / org / AS name for grouping (same order as map popup Provider line). */
+export function providerLabelForPoint(p: MapNodePoint): string {
+  const t = p.geoIsp?.trim() || p.geoOrg?.trim() || p.geoAsname?.trim();
+  return t || "Unknown";
+}
+
 export type ApiNodeRow = {
   id: string | number;
   host: string;
